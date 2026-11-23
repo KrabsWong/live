@@ -1,0 +1,32 @@
+name: Sync fork
+
+on:
+  schedule:
+    # Runs once daily, 10 minutes after the midnight UTC EPG update workflow.
+    - cron: '25 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-fork-main
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync default branch from upstream
+        id: sync
+        uses: KrabsWong/sync-fork-action@v1.2.7
+        with:
+          token: ${{ github.token }}
+          upstream-repository: fanmingming/live
+          upstream-branch: main
+          target-branch: main
+          strategy: rebase
+          rebase-conflict: prefer-upstream
+
+      - name: Show sync result
+        run: echo "updated=${{ steps.sync.outputs.updated }}"
